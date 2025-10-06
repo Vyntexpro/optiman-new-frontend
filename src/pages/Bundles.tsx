@@ -37,6 +37,7 @@ import AddBundleDialog from "@/app-components/forms/Bundle";
 import { useArticlesQuery } from "@/api/article";
 import { useRowsQuery } from "@/api/row";
 import FilterSkeleton from "@/app-components/common/FilterSkeleton";
+import { useOrderesQuery } from "@/api/order";
 const Bundles = () => {
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState<any | null>(null);
@@ -51,7 +52,9 @@ const Bundles = () => {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const { companyId } = useContext(AuthContext);
   const pageSize = 10;
-  const { data: articles, isPending } = useArticlesQuery(0, 1000000, companyId);
+  const { data: orders, isPending } = useOrderesQuery(0, 1000000, companyId);
+  const allArticles =
+    orders?.content?.flatMap((order) => order.makeOrderArticle) || [];
   const { data: rows, isFetching } = useRowsQuery(0, 1000000, companyId);
   const {
     data: bundles,
@@ -92,7 +95,7 @@ const Bundles = () => {
                   <SelectItem value="all" className="select-style py-2">
                     All Articles
                   </SelectItem>
-                  {articles?.content?.map((article: any) => (
+                  {allArticles.map((article: any) => (
                     <SelectItem
                       key={article.id}
                       value={String(article.id)}

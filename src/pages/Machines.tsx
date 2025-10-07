@@ -344,11 +344,15 @@ const Machines = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => {
+                          setEditData(machine);
+                          setOpen(true);
+                        }}
                         className={`h-[22px] w-[52px] font-semibold text-[9px]
     ${
       machine.status === "ACTIVE"
         ? "bg-softgreen/20 text-darkgreen border-darkgreen"
-        : "border-primary bg-slate-200/50 text-primary"
+        : "border-red bg-lightred/40 text-red font-semibold"
     }
   `}
                       >

@@ -332,7 +332,7 @@ const Bundles = () => {
                           type="text"
                           placeholder="Scan or enter card uid"
                           className="input-style !h-[29px] w-[150px] pl-2 placeholder:text-[10px]"
-                          value={bundle?.card}
+                          value={updateId === bundle.id ? card : bundle?.card}
                           onChange={(e) => {
                             const value = e.target.value;
                             setCard(value);
@@ -340,6 +340,10 @@ const Bundles = () => {
                             setApiError(null);
                             setErrorId(null);
                             if (typingTimeout) clearTimeout(typingTimeout);
+                            if (value.length !== 10) {
+                              setTypingTimeout(null);
+                              return;
+                            }
                             const timeout = setTimeout(() => {
                               editBundleMutation.mutate(
                                 {
@@ -361,6 +365,7 @@ const Bundles = () => {
                                     setUpdateId(null);
                                     setErrorId(null);
                                     setApiError(null);
+                                    refetch();
                                   },
                                   onError: (error: any) => {
                                     setUpdateId(null);
@@ -408,6 +413,10 @@ const Bundles = () => {
                             setSize(value);
                             setUpdate2Id(bundle.id);
                             if (typingTimeout) clearTimeout(typingTimeout);
+                            if (value.length == 0) {
+                              setTypingTimeout(null);
+                              return;
+                            }
                             const timeout = setTimeout(() => {
                               editBundleMutation.mutate(
                                 {
@@ -425,7 +434,10 @@ const Bundles = () => {
                                   },
                                 },
                                 {
-                                  onSuccess: () => setUpdate2Id(null),
+                                  onSuccess: () => {
+                                    setUpdate2Id(null);
+                                    refetch();
+                                  },
                                   onError: () => setUpdate2Id(null),
                                 }
                               );

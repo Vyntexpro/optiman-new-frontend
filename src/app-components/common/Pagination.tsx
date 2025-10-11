@@ -68,10 +68,10 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
           i >= 0 ? (
             <PaginationItem key={idx}>
               <PaginationLink
-                className={` w-[26px] h-[26px] rounded-md text-[13px] ${
+                className={` w-[26px] h-[26px] rounded-md text-[11px] ${
                   i === pageNo
                     ? "bg-primary text-white cursor-pointer"
-                    : "bg-gray-100 cursor-pointer hover:bg-gray-200"
+                    : "bg-slate-200 cursor-pointer hover:bg-slate-300"
                 }`}
                 onClick={() => handlePageChange(i)}
               >

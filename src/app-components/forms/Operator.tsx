@@ -161,23 +161,6 @@ const AddOperatorDialog: React.FC<AddOperatorDialogProps> = ({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            {" "}
-            <div>
-              <Label htmlFor="cardTag" className="text-[11px]">
-                Card UID
-              </Label>
-              <Input
-                id="cardTag"
-                {...register("cardTag")}
-                className="input-style"
-                placeholder="Enter card UID"
-              />
-              {errors.cardTag && (
-                <p className="mt-1 text-[11px] text-red">
-                  {errors.cardTag.message}
-                </p>
-              )}
-            </div>
             <div>
               <Controller
                 control={control}
@@ -238,6 +221,22 @@ const AddOperatorDialog: React.FC<AddOperatorDialogProps> = ({
                   </div>
                 )}
               />
+            </div>
+            <div>
+              <Label htmlFor="cardTag" className="text-[11px]">
+                Card UID
+              </Label>
+              <Input
+                id="cardTag"
+                {...register("cardTag")}
+                className="input-style"
+                placeholder="Enter card UID"
+              />
+              {errors.cardTag && (
+                <p className="mt-1 text-[11px] text-red">
+                  {errors.cardTag.message}
+                </p>
+              )}
             </div>
           </div>
           <div>

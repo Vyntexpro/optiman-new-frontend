@@ -185,7 +185,7 @@ const Operators = () => {
                             new Date(operator.autoExpiryDate),
                             "dd/MM/yyyy"
                           )
-                        : "-"}
+                        : "not available"}
                     </TableCell>
 
                     <TableCell className="py-3 text-[11px]">
@@ -219,7 +219,7 @@ const Operators = () => {
                           /{operator.loggedInDevice}
                         </>
                       ) : (
-                        "Not logged in yet"
+                        "not logged in yet"
                       )}
                     </TableCell>
                     <TableCell className="py-3 text-[11px]">

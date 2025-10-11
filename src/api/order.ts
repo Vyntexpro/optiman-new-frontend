@@ -2,7 +2,7 @@ import { api } from "./index";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const fetchOrderes = async ({
+const fetchOrders = async ({
   pageNo,
   pageSize,
   companyId,
@@ -26,6 +26,14 @@ const fetchOrderes = async ({
   );
   return data;
 };
+const fetchActiveOrders = async ({ companyId }: { companyId: number }) => {
+  const { data } = await api.get(`/makeOrder/active-order/${companyId}`);
+  return data;
+};
+const fetchOrderArticles = async ({ orderId }: { orderId: number }) => {
+  const { data } = await api.get(`/makeOrderArticle/order-article/${orderId}`);
+  return data;
+};
 
 export const deleteOrder = async (id: number) => {
   return api.delete(`/makeOrder/delete/${id}`);
@@ -42,7 +50,7 @@ export const editOrderStatus = async (id: number, orderData: any) => {
   return api.put(`/makeOrder/updateJobDashBoardControl/${id}`, orderData);
 };
 
-export const useOrderesQuery = (
+export const useOrdersQuery = (
   pageNo: number,
   pageSize: number,
   companyId: number,
@@ -61,7 +69,19 @@ export const useOrderesQuery = (
       search,
     ],
     queryFn: () =>
-      fetchOrderes({ pageNo, pageSize, companyId, status, customerId, search }),
+      fetchOrders({ pageNo, pageSize, companyId, status, customerId, search }),
+  });
+
+export const useActiveOrdersQuery = (companyId: number) =>
+  useQuery({
+    queryKey: ["activeorders", companyId],
+    queryFn: () => fetchActiveOrders({ companyId }),
+  });
+
+export const useOrderArticlesQuery = (orderId: number) =>
+  useQuery({
+    queryKey: ["orderarticles", orderId],
+    queryFn: () => fetchOrderArticles({ orderId }),
   });
 
 export const useDeleteOrderMutation = () => {

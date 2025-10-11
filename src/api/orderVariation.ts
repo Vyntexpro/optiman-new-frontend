@@ -4,15 +4,17 @@ import { toast } from "sonner";
 
 const fetchVariations = async ({
   orderId,
+  articleId,
   search,
 }: {
   orderId: number;
+  articleId?: number;
   search?: string;
 }) => {
   const { data } = await api.get(
-    `/makeOrderArticleDetail/suborder/${orderId}${
-      search ? `&search=${encodeURIComponent(search)}` : ""
-    }`
+    `/makeOrderArticleDetail/suborder/${orderId}?${
+      articleId !== undefined ? `&articleId=${articleId}` : ""
+    }${search ? `&search=${encodeURIComponent(search)}` : ""}`
   );
   return data;
 };
@@ -32,10 +34,14 @@ export const editVariation = async (id: number, variationData: any) => {
   return api.put(`/makeOrderArticleDetail/update/${id}`, variationData);
 };
 
-export const useVariationsQuery = (orderId: number, search?: string) =>
+export const useVariationsQuery = (
+  orderId: number,
+  articleId?: number,
+  search?: string
+) =>
   useQuery({
-    queryKey: ["variations", orderId, search],
-    queryFn: () => fetchVariations({ orderId, search }),
+    queryKey: ["variations", orderId, articleId, search],
+    queryFn: () => fetchVariations({ orderId, articleId, search }),
   });
 export const useOrderArticlesQuery = (orderId: number) =>
   useQuery({

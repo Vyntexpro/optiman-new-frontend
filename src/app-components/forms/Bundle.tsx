@@ -25,9 +25,9 @@ import { Controller } from "react-hook-form";
 
 import { components } from "react-select";
 import { useAddBundleMutation, useEditBundleMutation } from "@/api/bundle";
-import { Shirt, ShoppingCartIcon, User } from "lucide-react";
+import { ShoppingCartIcon, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useOrderesQuery } from "@/api/order";
+import { useActiveOrdersQuery } from "@/api/order";
 import { AuthContext } from "@/context/AuthContext";
 import { useVariationsQuery } from "@/api/orderVariation";
 import InputFieldSkeleton from "../common/InputFieldSkeleton";
@@ -49,7 +49,7 @@ const bundleSchema = z.object({
   articleId: z.string().min(1, "Article is required"),
 });
 const editBundleSchema = bundleSchema.omit({ numberBundles: true }).extend({
-  bundleSize: z.coerce.number().min(1, "Bundle size is required"),
+  bundleSize: z.coerce.number().optional(),
 });
 type BundleFormData = z.infer<typeof bundleSchema>;
 
@@ -78,22 +78,26 @@ const AddBundleDialog: React.FC<AddBundleDialogProps> = ({
   } = useForm<BundleFormData>({
     resolver: zodResolver(isEdit ? editBundleSchema : bundleSchema),
   });
-  const pageSize = 1000000;
   const { companyId } = useContext(AuthContext);
   const [apiError, setApiError] = useState<string | null>(null);
   const addBundleMutation = useAddBundleMutation(setApiError);
   const editBundleMutation = useEditBundleMutation(setApiError);
   const selectedOrder = watch("orderId");
+  const selectedArticleId = watch("articleId");
   const orderId = selectedOrder ? Number(selectedOrder.value) : 0;
-  const { data: orders, isLoading } = useOrderesQuery(0, pageSize, companyId);
+  const { data: orders, isLoading } = useActiveOrdersQuery(companyId);
   const { data: variations, isPending } = useVariationsQuery(orderId);
-  const selectedOrderObj = orders?.content?.find((o: any) => o.id === orderId);
+  const selectedOrderObj = orders?.find((o: any) => o.id === orderId);
   const rows = selectedOrderObj?.rows || [];
   const orderOptions =
-    orders?.content?.map((order: any) => ({
+    orders?.map((order: any) => ({
       value: order.id,
       label: order.orderNo,
     })) || [];
+
+  const filteredVariations =
+    variations?.filter((v: any) => String(v.articleId) === selectedArticleId) ||
+    [];
   const customOption = (props: any) => {
     const { data, innerRef, innerProps } = props;
 
@@ -114,7 +118,7 @@ const AddBundleDialog: React.FC<AddBundleDialogProps> = ({
   };
   const CustomNoOptionsMessage = (props: any) => (
     <components.NoOptionsMessage {...props}>
-      <span className="nodatatext">No Orders Available</span>
+      <span className="nodatatext">No Active Orders Available</span>
     </components.NoOptionsMessage>
   );
   const filterOption = (option: any, rawInput: string) => {
@@ -342,14 +346,14 @@ const AddBundleDialog: React.FC<AddBundleDialogProps> = ({
                           <SelectValue placeholder="Select Variation" />
                         </SelectTrigger>
                         <SelectContent className="bg-white border-slate-300">
-                          {variations.length > 0 ? (
-                            variations?.map((v: any) => (
+                          {filteredVariations.length > 0 ? (
+                            filteredVariations.map((v: any) => (
                               <SelectItem
                                 className="select-style py-1"
                                 key={v.orderDetailId}
                                 value={String(v.orderDetailId)}
                               >
-                                {v.color},{v.size}
+                                {v.color}, {v.size}
                               </SelectItem>
                             ))
                           ) : (

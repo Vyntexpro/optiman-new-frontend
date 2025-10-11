@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useOrderesQuery,
+  useOrdersQuery,
   useDeleteOrderMutation,
   useEditOrderStatusMutation,
 } from "@/api/order";
@@ -58,7 +58,7 @@ const Orders = () => {
     data: orders,
     isLoading,
     refetch,
-  } = useOrderesQuery(
+  } = useOrdersQuery(
     pageNo,
     pageSize,
     companyId,
@@ -220,7 +220,7 @@ const Orders = () => {
                         : "-"}
                     </TableCell>
 
-                    <TableCell className="py-3 flex items-center gap-2">
+                    <TableCell className="py-3 w-[70px] flex items-center gap-2">
                       <div className="mt-[4px]">
                         <Switch
                           small

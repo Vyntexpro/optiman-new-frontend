@@ -10,6 +10,7 @@ import {
 import {
   useBundlesQuery,
   useDeleteBundleMutation,
+  useEditBundleMutation,
   useEditBundleStatusMutation,
 } from "@/api/bundle";
 import { Plus, Search } from "lucide-react";
@@ -32,30 +33,49 @@ import { Switch } from "@/components/ui/switch";
 import Spinner from "@/app-components/common/Spinner";
 import useDebounce from "@/lib/helperFunctions";
 import BundleOperationsDialog from "@/app-components/popups/BundleOperations";
-import { AiOutlinePlus } from "react-icons/ai";
 import AddBundleDialog from "@/app-components/forms/Bundle";
-import { useArticlesQuery } from "@/api/article";
-import { useRowsQuery } from "@/api/row";
 import FilterSkeleton from "@/app-components/common/FilterSkeleton";
-import { useOrderesQuery } from "@/api/order";
+import { useOrderArticlesQuery, useOrdersQuery } from "@/api/order";
+import { useVariationsQuery } from "@/api/orderVariation";
 const Bundles = () => {
   const [open, setOpen] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [editData, setEditData] = useState<any | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [rowId, setRowId] = useState<any | null>(undefined);
+  const [orderId, setOrderId] = useState<any | null>(undefined);
+  const [errorId, setErrorId] = useState<number | null>(null);
+  const [variationId, setVariationId] = useState<any | null>(undefined);
   const [article, setArticle] = useState<any | null>(undefined);
   const [pageNo, setPageNo] = useState(0);
   const [search, setSearch] = useState("");
+  const [card, setCard] = useState("");
+  const [size, setSize] = useState("");
   const [openOps, setOpenOps] = useState(false);
   const [selectedOps, setSelectedOps] = useState<any[]>([]);
   const debouncedSearch = useDebounce(search, 500);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [updateId, setUpdateId] = useState<number | null>(null);
+  const [update2Id, setUpdate2Id] = useState<number | null>(null);
   const { companyId } = useContext(AuthContext);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
   const pageSize = 10;
-  const { data: orders, isPending } = useOrderesQuery(0, 1000000, companyId);
-  const allArticles =
-    orders?.content?.flatMap((order) => order.makeOrderArticle) || [];
-  const { data: rows, isFetching } = useRowsQuery(0, 1000000, companyId);
+  const { data: orders, isPending } = useOrdersQuery(0, 1000000, companyId);
+  const selectedOrder = orders?.content?.find(
+    (order) => Number(order.id) === Number(orderId)
+  );
+  const rows = selectedOrder?.rows || [];
+  const { data: allArticles, isLoading: articlesLoading } =
+    useOrderArticlesQuery(orderId || 0);
+
+  const { data: variations, isLoading: variationsLoading } = useVariationsQuery(
+    orderId || 0,
+    article || 0,
+    debouncedSearch
+  );
+
   const {
     data: bundles,
     isLoading,
@@ -64,12 +84,15 @@ const Bundles = () => {
     pageNo,
     pageSize,
     companyId,
+    orderId,
     article,
+    variationId,
     rowId,
     debouncedSearch
   );
   const editBundleStatusMutation = useEditBundleStatusMutation();
   const deleteMutation = useDeleteBundleMutation();
+  const editBundleMutation = useEditBundleMutation(setApiError);
   return (
     <div className="page-container">
       <div>
@@ -78,9 +101,37 @@ const Bundles = () => {
             <h2 className="text-[23px] font-bold ">Manage Bundles</h2>
           </div>
 
-          <div className="flex flex-row items-center gap-[8px]">
+          <div className="flex flex-row items-center gap-[6px]">
             {isPending ? (
-              <FilterSkeleton medium />
+              <FilterSkeleton small />
+            ) : (
+              <Select
+                onValueChange={(value) => {
+                  setOrderId(value === "all" ? undefined : value);
+                  setPageNo(0);
+                }}
+              >
+                <SelectTrigger className="w-[120px] h-[40px] input-style bg-white">
+                  <SelectValue placeholder="Filter by Order" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-slate-300">
+                  <SelectItem value="all" className="select-style py-2">
+                    All Orders
+                  </SelectItem>
+                  {orders.content.map((order: any) => (
+                    <SelectItem
+                      key={order.id}
+                      value={String(order.id)}
+                      className="select-style py-1"
+                    >
+                      {order.orderNo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {articlesLoading ? (
+              <FilterSkeleton small />
             ) : (
               <Select
                 onValueChange={(value) => {
@@ -88,14 +139,14 @@ const Bundles = () => {
                   setPageNo(0);
                 }}
               >
-                <SelectTrigger className="w-[130px] h-[40px] input-style bg-white">
+                <SelectTrigger className="w-[120px] h-[40px] input-style bg-white">
                   <SelectValue placeholder="Filter by Article" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-300">
                   <SelectItem value="all" className="select-style py-2">
                     All Articles
                   </SelectItem>
-                  {allArticles.map((article: any) => (
+                  {allArticles?.map((article: any) => (
                     <SelectItem
                       key={article.id}
                       value={String(article.id)}
@@ -107,34 +158,59 @@ const Bundles = () => {
                 </SelectContent>
               </Select>
             )}
-            {isFetching ? (
+            {variationsLoading ? (
               <FilterSkeleton medium />
             ) : (
               <Select
                 onValueChange={(value) => {
-                  setRowId(value === "all" ? undefined : value);
+                  setVariationId(value === "all" ? undefined : value);
                   setPageNo(0);
                 }}
               >
                 <SelectTrigger className="w-[130px] h-[40px] input-style bg-white">
-                  <SelectValue placeholder="Filter by Row" />
+                  <SelectValue placeholder="Filter by Variation" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-300">
                   <SelectItem value="all" className="select-style py-2">
-                    All Rows
+                    All Variations
                   </SelectItem>
-                  {rows?.content?.map((row: any) => (
+                  {variations?.map((v: any) => (
                     <SelectItem
-                      key={row.id}
-                      value={String(row.id)}
+                      key={v.orderDetailId}
+                      value={String(v.orderDetailId)}
                       className="select-style py-1"
                     >
-                      {row.rowName}
+                      {v.size},{v.color}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             )}
+            <Select
+              onValueChange={(value) => {
+                setRowId(value === "all" ? undefined : value);
+                setPageNo(0);
+              }}
+            >
+              <SelectTrigger className="w-[110px] h-[40px] input-style bg-white">
+                <SelectValue placeholder="Filter by Row" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-slate-300">
+                <SelectItem value="all" className="select-style py-2">
+                  All Rows
+                </SelectItem>
+                {rows?.map((row: any) => (
+                  <SelectItem
+                    key={row.id}
+                    value={String(row.id)}
+                    className="select-style py-1"
+                  >
+                    {row.rowName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <div className="relative w-[250px]">
               <Search className="absolute left-3 top-3.5 text-primary w-4 h-4" />
               <Input
@@ -174,18 +250,9 @@ const Bundles = () => {
                   <TableHead className="text-[11px] font-bold">
                     Active
                   </TableHead>
-                  <TableHead className="text-[11px] font-bold">Row</TableHead>
-                  <TableHead className="text-[11px] font-bold">
-                    Order No
-                  </TableHead>
+
                   <TableHead className="text-[11px] font-bold">
                     Card UID
-                  </TableHead>
-                  <TableHead className="text-[11px] font-bold">
-                    Article
-                  </TableHead>
-                  <TableHead className="text-[11px] font-bold">
-                    Order Variation
                   </TableHead>
                   <TableHead className="text-[11px] font-bold">
                     Bundle Size
@@ -217,8 +284,8 @@ const Bundles = () => {
                         ? format(new Date(bundle.createdAt), "dd/MM/yyyy")
                         : "-"}
                     </TableCell>
-                    <TableCell className="py-3 flex items-center gap-2">
-                      <div className="mt-[4px]">
+                    <TableCell className="py-3 flex items-center w-[60px] gap-2">
+                      <div className="mt-[6px]">
                         <Switch
                           small
                           checked={bundle.status === 1}
@@ -246,45 +313,139 @@ const Bundles = () => {
                       </div>
                       {editBundleStatusMutation.isPending &&
                         updatingId === bundle.id && (
-                          <Spinner
-                            size="w-[12px] h-[12px]"
-                            color="border-primary"
-                            borderSize="border-2"
-                          />
+                          <div className="mt-[4px]">
+                            <Spinner
+                              size="w-[12px] h-[12px]"
+                              color="border-primary"
+                              borderSize="border-2"
+                            />
+                          </div>
                         )}
                     </TableCell>
-                    <TableCell className="py-3 text-[11px]">
-                      {bundle.rowName}
-                    </TableCell>
-                    <TableCell className="py-3 text-[11px]">
-                      {bundle.orderNo}
-                    </TableCell>
-                    <TableCell className="py-3 text-[11px]">
-                      {bundle.card ? (
-                        bundle.card
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-primary text-primary font-semibold bg-slate-200/50 text-[9px] h-[24px] w-[70px]"
-                          onClick={() => {
-                            setEditData(bundle);
-                            setOpen(true);
+
+                    <TableCell className="py-3 w-[300px] text-[11px]">
+                      <div
+                        className="flex items-center gap-[12px]
+                      "
+                      >
+                        <Input
+                          type="text"
+                          placeholder="Scan or enter card uid"
+                          className="input-style !h-[29px] w-[150px] pl-2 placeholder:text-[10px]"
+                          value={bundle?.card}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCard(value);
+                            setUpdateId(bundle.id);
+                            setApiError(null);
+                            setErrorId(null);
+                            if (typingTimeout) clearTimeout(typingTimeout);
+                            const timeout = setTimeout(() => {
+                              editBundleMutation.mutate(
+                                {
+                                  id: bundle.id,
+                                  bundleData: {
+                                    bundle: bundle.bundleSize,
+                                    makeOrderArticle: {
+                                      id: String(bundle.articleId),
+                                    },
+                                    makeOrderArticleDetail: {
+                                      id: bundle.articleDetailId,
+                                    },
+                                    row: { id: bundle.rowId },
+                                    cardTag: value,
+                                  },
+                                },
+                                {
+                                  onSuccess: () => {
+                                    setUpdateId(null);
+                                    setErrorId(null);
+                                    setApiError(null);
+                                  },
+                                  onError: (error: any) => {
+                                    setUpdateId(null);
+                                    setErrorId(bundle.id);
+                                    const message =
+                                      error?.response?.data?.message ||
+                                      error?.message ||
+                                      "Something went wrong while updating the card";
+                                    setApiError(message);
+                                  },
+                                }
+                              );
+                            }, 500);
+
+                            setTypingTimeout(timeout);
                           }}
-                        >
-                          <AiOutlinePlus className="!w-2.5 !h-2.5 -mr-1" />
-                          Add card
-                        </Button>
+                        />
+
+                        {editBundleMutation.isPending &&
+                          updateId === bundle.id && (
+                            <div className="mt-[4px]">
+                              <Spinner
+                                size="w-[14px] h-[14px]"
+                                color="border-primary"
+                                borderSize="border-2"
+                              />
+                            </div>
+                          )}
+                      </div>
+                      {errorId === bundle.id && apiError && (
+                        <p className="text-[9px] text-red ">{apiError}</p>
                       )}
                     </TableCell>
-                    <TableCell className="py-3 text-[11px]">
-                      {bundle.articleName}
-                    </TableCell>
-                    <TableCell className="py-3 text-[11px]">
-                      {bundle.size},{bundle.color}
-                    </TableCell>
-                    <TableCell className="py-3 text-[11px]">
-                      {bundle.bundleSize}
+                    <TableCell className="py-3 w-[200px] text-[11px]">
+                      <div className="flex items-center gap-[12px]">
+                        <Input
+                          type="number"
+                          placeholder=""
+                          className="input-style !h-[29px] w-[100px] pl-2 placeholder:text-[10px]"
+                          value={
+                            update2Id === bundle.id ? size : bundle?.bundleSize
+                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSize(value);
+                            setUpdate2Id(bundle.id);
+                            if (typingTimeout) clearTimeout(typingTimeout);
+                            const timeout = setTimeout(() => {
+                              editBundleMutation.mutate(
+                                {
+                                  id: bundle.id,
+                                  bundleData: {
+                                    bundle: value,
+                                    makeOrderArticle: {
+                                      id: String(bundle.articleId),
+                                    },
+                                    makeOrderArticleDetail: {
+                                      id: bundle.articleDetailId,
+                                    },
+                                    row: { id: bundle.rowId },
+                                    cardTag: bundle.card,
+                                  },
+                                },
+                                {
+                                  onSuccess: () => setUpdate2Id(null),
+                                  onError: () => setUpdate2Id(null),
+                                }
+                              );
+                            }, 1000);
+
+                            setTypingTimeout(timeout);
+                          }}
+                        />
+
+                        {editBundleMutation.isPending &&
+                          update2Id === bundle.id && (
+                            <div className="mt-[4px]">
+                              <Spinner
+                                size="w-[14px] h-[14px]"
+                                color="border-primary"
+                                borderSize="border-2"
+                              />
+                            </div>
+                          )}
+                      </div>
                     </TableCell>
 
                     <TableCell className="py-3 text-[11px]">
@@ -300,7 +461,7 @@ const Bundles = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="bg-softgreen/20 text-darkgreen border-darkgreen font-semibold text-[9.5px] h-[26px]"
+                              className="bg-softgreen/20 text-darkgreen border-darkgreen font-semibold text-[9px] h-[26px]"
                               onClick={() => {
                                 setSelectedOps(bundle.operations || []);
                                 setOpenOps(true);
@@ -314,7 +475,7 @@ const Bundles = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-primary bg-slate-200/50 font-semibold text-primary text-[9.5px] h-[26px]"
+                              className="border-primary bg-slate-200/50 font-semibold text-primary text-[9px] h-[26px]"
                               onClick={() => {
                                 setSelectedOps(bundle.operations || []);
                                 setOpenOps(true);

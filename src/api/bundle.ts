@@ -6,20 +6,26 @@ const fetchBundles = async ({
   pageNo,
   pageSize,
   companyId,
+  orderId,
   article,
+  variationId,
   rowId,
   search,
 }: {
   pageNo: number;
   pageSize: number;
   companyId: number;
+  orderId?: number;
   article?: number;
+  variationId?: number;
   rowId?: number;
   search?: string;
 }) => {
   const { data } = await api.get(
     `/unit-card/pageable/${companyId}?pageNo=${pageNo}&pageSize=${pageSize}${
-      article !== undefined ? `&article=${article}` : ""
+      orderId !== undefined ? `&orderId=${orderId}` : ""
+    }${article !== undefined ? `&article=${article}` : ""}${
+      variationId !== undefined ? `&variationId=${variationId}` : ""
     }${rowId !== undefined ? `&rowId=${rowId}` : ""}${
       search ? `&search=${encodeURIComponent(search)}` : ""
     }`
@@ -39,21 +45,42 @@ export const editBundle = async (id: number, bundleData: any) => {
   return api.put(`/unit-card/${id}`, bundleData);
 };
 export const editBundleStatus = async (id: number, bundleData: any) => {
-  return api.put(`/unit-card/${id}`, bundleData);
+  return api.patch(`/unit-card/${id}`, bundleData);
 };
 
 export const useBundlesQuery = (
   pageNo: number,
   pageSize: number,
   companyId: number,
+  orderId?: number,
   article?: number,
+  variationId?: number,
   rowId?: number,
   search?: string
 ) =>
   useQuery({
-    queryKey: ["bundles", pageNo, pageSize, companyId, article, rowId, search],
+    queryKey: [
+      "bundles",
+      pageNo,
+      pageSize,
+      companyId,
+      orderId,
+      article,
+      variationId,
+      rowId,
+      search,
+    ],
     queryFn: () =>
-      fetchBundles({ pageNo, pageSize, companyId, article, rowId, search }),
+      fetchBundles({
+        pageNo,
+        pageSize,
+        companyId,
+        orderId,
+        article,
+        variationId,
+        rowId,
+        search,
+      }),
   });
 
 export const useDeleteBundleMutation = () => {

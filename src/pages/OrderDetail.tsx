@@ -44,6 +44,7 @@ const OrderDetail = () => {
   const [order, setOrder] = useState(initialOrder);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState<any | null>(null);
+  const [articleId, setArticleId] = useState<any | null>(undefined);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedOperation, setSelectedOperation] = useState<any>(null);
@@ -57,7 +58,7 @@ const OrderDetail = () => {
     data: variations,
     isLoading,
     refetch,
-  } = useVariationsQuery(orderId, debouncedSearch);
+  } = useVariationsQuery(orderId, articleId, debouncedSearch);
   const {
     data: operations,
     isPending,
@@ -265,18 +266,44 @@ const OrderDetail = () => {
       <div className="rounded-lg border border-slate-200 shadow-2xl bg-white shadow-primary/10 backdrop-blur-lg px-4 py-2 mt-[18px] mb-[30px]">
         <div className="flex items-start justify-between mb-[12px] mt-[10px]">
           <h2 className="text-[18px] font-bold ">Order Variations</h2>
-          <Button
-            className="h-[40px] w-[140px] flex items-center text-[10px] font-semibold"
-            onClick={() => {
-              setEditData(null);
-              setOpen(true);
-            }}
-          >
-            <Plus />
-            <p className="text-[10px] font-semibold mt-[2px]">
-              Add New Variation
-            </p>
-          </Button>
+          <div className="flex flex-row items-center gap-[10px]">
+            <Select
+              onValueChange={(value) => {
+                setArticleId(value === "all" ? undefined : value);
+                setPageNo(0);
+              }}
+            >
+              <SelectTrigger className="w-[130px] h-[40px] input-style bg-white">
+                <SelectValue placeholder="Filter by Article" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-slate-300">
+                <SelectItem value="all" className="select-style py-2">
+                  All Articles
+                </SelectItem>
+                {order.makeOrderArticle?.map((a: any) => (
+                  <SelectItem
+                    key={a.id}
+                    value={String(a.id)}
+                    className="select-style py-[2px]"
+                  >
+                    {a.articleName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              className="h-[40px] w-[140px] mt-[1px] flex items-center text-[10px] font-semibold"
+              onClick={() => {
+                setEditData(null);
+                setOpen(true);
+              }}
+            >
+              <Plus />
+              <p className="text-[10px] font-semibold mt-[2px]">
+                Add New Variation
+              </p>
+            </Button>
+          </div>
         </div>
         {isLoading ? (
           <TableSkeleton />

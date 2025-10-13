@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useLoginMutation } from "../../api/auth";
 import Spinner from "../common/Spinner";
+import logo from "../../assets/images/optiman-logo.png";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -41,7 +42,7 @@ const LoginForm = () => {
           <div className="text-center mb-8">
             <div className="mx-auto w-full flex items-center justify-center mb-3">
               <img
-                src="/src/assets/images/optiman-logo.png"
+                src={logo}
                 alt="Optiman Logo"
                 className="w-[110px] h-[18px] object-cover"
               />

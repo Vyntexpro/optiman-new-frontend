@@ -16,6 +16,7 @@ import { Gi3dStairs, GiSewingMachine } from "react-icons/gi";
 import { TbDeviceGamepad } from "react-icons/tb";
 import { BiBuilding, BiUser } from "react-icons/bi";
 import { AuthContext } from "@/context/AuthContext";
+import logo from "../../assets/images/optiman-logo.png";
 
 const SideBar = () => {
   const { userDetail } = useContext(AuthContext);
@@ -169,7 +170,7 @@ const SideBar = () => {
       <div className="flex items-center bg-white justify-between px-4 py-2 border-b border-gray/10">
         {" "}
         <img
-          src="/src/assets/images/optiman-logo.png"
+          src={logo}
           alt="Optiman Logo"
           className="w-[90px] h-[15px] ml-1 object-cover"
         />

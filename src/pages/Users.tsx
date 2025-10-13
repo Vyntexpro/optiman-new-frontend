@@ -146,11 +146,12 @@ const Users = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-primary text-primary text-[9px] h-[26px]"
+                        className="border-primary !disabled:cursor-not-allowed text-primary text-[9px] h-[26px]"
                         onClick={() => {
                           setEditData(user);
                           setOpen(true);
                         }}
+                        disabled={user.role?.name === "ROLE_SUPERADMIN"}
                       >
                         Edit
                       </Button>

@@ -32,7 +32,7 @@ import { AuthContext } from "@/context/AuthContext";
 const operatorSchema = z.object({
   operatorName: z.string().min(1, "Operator name is required"),
   cardTag: z.string().min(1, "Card UID is required"),
-  autoExpiryDate: z.string().optional(),
+  autoExpiryDate: z.string().nullable().optional(),
   userSrNo: z.string().min(1, "Code is required"),
 });
 
@@ -84,13 +84,13 @@ const AddOperatorDialog: React.FC<AddOperatorDialogProps> = ({
       }
     }
   }, [isEdit, operatorData, reset, open]);
-
   const onSubmit = (data: OperatorFormData) => {
     const payload: any = {
       ...data,
+      autoExpiryDate: data.autoExpiryDate || "",
+      status: isEdit ? operatorData.status || 0 : 1,
       company: { id: companyId },
     };
-
     if (isEdit && operatorData?.id) {
       editOperatorMutation.mutate(
         { id: operatorData.id, operatorData: payload },

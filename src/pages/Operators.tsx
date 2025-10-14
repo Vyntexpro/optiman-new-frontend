@@ -269,7 +269,6 @@ const Operators = () => {
             }}
           />
         </div>
-
         <AddOperatorDialog
           open={open}
           onClose={() => setOpen(false)}

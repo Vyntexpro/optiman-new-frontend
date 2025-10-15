@@ -237,7 +237,7 @@ const OrderDetail = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className={`font-semibold text-[9px] h-[24px] w-[140px] ${
+                          className={`font-bold text-[9px] h-[24px] w-[150px] ${
                             operation.machinesId?.length > 0
                               ? "border-primary bg-slate-200/50 text-primary"
                               : "border-red bg-lightred text-red"

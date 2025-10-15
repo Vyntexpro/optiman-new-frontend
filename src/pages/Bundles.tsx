@@ -257,9 +257,9 @@ const Bundles = () => {
                   <TableHead className="text-[11px] font-bold">
                     Bundle Size
                   </TableHead>
-                  <TableHead className="text-[11px] font-bold">
+                  {/* <TableHead className="text-[11px] font-bold">
                     Operations Status
-                  </TableHead>
+                  </TableHead> */}
                   <TableHead className="text-[11px] font-bold">Edit</TableHead>
                   <TableHead className="text-[11px] font-bold">
                     Delete
@@ -460,7 +460,7 @@ const Bundles = () => {
                       </div>
                     </TableCell>
 
-                    <TableCell className="py-3 text-[11px]">
+                    {/* <TableCell className="py-3 text-[11px]">
                       {(() => {
                         const totalOps = bundle.operations?.length || 0;
                         const completedOps =
@@ -498,7 +498,7 @@ const Bundles = () => {
                           );
                         }
                       })()}
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="py-3 text-[11px]">
                       <Button
                         variant="outline"

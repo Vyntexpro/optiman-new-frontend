@@ -237,14 +237,22 @@ const OrderDetail = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-primary bg-slate-200/50 font-semibold text-primary text-[9px] h-[24px]"
+                          className={`font-semibold text-[9px] h-[24px] w-[140px] ${
+                            operation.machinesId?.length > 0
+                              ? "border-primary bg-slate-200/50 text-primary"
+                              : "border-red bg-lightred text-red"
+                          }`}
                           onClick={() => {
                             setSelectedOperation(operation);
                             setOpenDialog(true);
                           }}
                         >
                           <GiSewingMachine className="mr-1" />
-                          Manage Machines
+                          {operation.machinesId?.length > 0
+                            ? `${operation.machinesId.length} Machine${
+                                operation.machinesId.length > 1 ? "s" : ""
+                              } Attached`
+                            : "No Machines Attached"}
                         </Button>
                       </TableCell>
                     </TableRow>

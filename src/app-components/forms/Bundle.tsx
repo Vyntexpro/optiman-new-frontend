@@ -163,6 +163,7 @@ const AddBundleDialog: React.FC<AddBundleDialogProps> = ({
       const editPayload = {
         bundle: data.bundleSize || 0,
         cardTag: data.card || null,
+        status: bundleData.status || 1,
         makeOrderArticle: { id: String(data.articleId) },
         makeOrderArticleDetail: { id: data.orderVariation },
         row: { id: data.rowId },
@@ -183,6 +184,7 @@ const AddBundleDialog: React.FC<AddBundleDialogProps> = ({
         bundle: 0,
         cardTag: data.card || null,
         displayName: "",
+        status: 1,
         generateCards: data.numberBundles,
         makeOrderArticle: { id: String(data.articleId) },
         makeOrderArticleDetail: { id: data.orderVariation },

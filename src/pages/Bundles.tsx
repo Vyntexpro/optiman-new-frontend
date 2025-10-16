@@ -358,6 +358,7 @@ const Bundles = () => {
                                     },
                                     row: { id: bundle.rowId },
                                     cardTag: value,
+                                    status: bundle.status,
                                   },
                                 },
                                 {
@@ -431,6 +432,7 @@ const Bundles = () => {
                                     },
                                     row: { id: bundle.rowId },
                                     cardTag: bundle.card,
+                                    status: bundle.status,
                                   },
                                 },
                                 {
